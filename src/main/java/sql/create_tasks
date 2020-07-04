@@ -1,0 +1,366 @@
+create table tasks(
+id integer not null default nextval('country_id_seq'::regclass),
+name character varying(50) not null,
+expirationdate timestamp not null,
+creationdate timestamp not null,
+state varchar(50) not null, -- можно как енум https://www.postgresql.org/docs/9.2/datatype-enum.html
+note text,
+supplierId integer,
+responsibleId integer,
+customerId integer,
+foreign key (supplierId, responsibleId, customerId) references suppliers (id), responsibles (id), customers (id) -- хз так можно ли ваще
+);
+
+create table tasks(
+id serial primary key,
+name character varying(50) not null,
+creator character varying(100) not null,
+expirationdate timestamp not null,
+creationdate timestamp not null,
+state1 varchar(50) not null, -- можно как енум https://www.postgresql.org/docs/9.2/datatype-enum.html
+note text,
+suppliers_id integer references suppliers (id),
+users_id integer references users (id)
+-- customer integer references customers (id)
+);
+
+insert into tasks(name, creator, expirationdate, creationdate, state1, note, suppliers_id, users_id)
+values ('задача что-то сделать', 'Василий Ярлов', now(), now(), 'в работе', 'описание задачи подробное, выполнить много чего', 1,1);
+insert into tasks(name, creator, expirationdate, creationdate, state1, note, suppliers_id, users_id)
+values ('задача что-то сделать 2', 'Василий Ярлов', now(), now(), 'в ожидании', 'описание задачи подробное, выполнить много чего', 1,1);
+insert into tasks(name, creator, expirationdate, creationdate, state1, note, suppliers_id, users_id)
+values ('задача что-то сделать 3', 'Василий Ярлов', now(), now(), 'просрочена', 'описание задачи подробное, выполнить много чего', 1,1);
+
+-- create table products(
+-- id serial primary key,
+-- name varchar(100) not null,
+-- fullName varchar(100) not null,
+-- manufacturer varchar(100) not null,
+-- -- supplier varchar(100) not null,
+-- -- applicationArea text not null, -- вставить категорию где-то
+-- characteristicProperties text not null, -- вставить ссылку на физико-химический свойства
+-- applicationArea text not null, -- вставить ссылку на физико-химический свойства
+-- category varchar(100) not null, -- вставить ссылку на физико-химический свойства
+-- suppliers_id integer references suppliers (id) -- возможно здесь наоборот. То есть надо поставить products_id в suppliers чтобы поставщиков отображать в продуктах
+-- );
+
+
+create table users(
+id serial primary key,
+fullName varchar(100) not null,
+birthDate timestamp not null,
+email varchar(100) not null,
+phone varchar(12) not null,
+role varchar(50) not null,
+password varchar(100) not null
+-- comments_id integer references comments (id)
+-- userId integer references category_users (userId)
+);
+
+drop table users cascade;
+
+insert into users(fullName, birthDate, email, phone, role, password) values ('Иванов Иван Иванович', now(), 'ee@ww.re', '123123123', 'role', 'pass');
+insert into users(fullName, birthDate, email, phone, role, password) values ('Петров Петр Петрович', now(), 'ee@ww.re', '123123123', 'role', 'pass');
+insert into users(fullName, birthDate, email, phone, role, password) values ('Сегеев Петр Петрович', now(), 'ee@ww.re', '123123123', 'Администратор', 'pass');
+insert into users(fullName, birthDate, email, phone, role, password) values ('Иванов Петр Петрович', now(), 'ee@ww.re', '123123123', 'Администратор', 'pass');
+
+
+create table category(
+id serial primary key,
+shortName varchar(10) not null,
+fullName varchar(100) not null
+-- categoryId integer references category_users (categoryId)
+);
+
+insert into category(shortName, fullName) values ('ПНД', 'Поливинилхлорид наноупорный дорогой');
+insert into category(shortName, fullName) values ('ПВХ', 'Поливинилхлорид');
+insert into category(shortName, fullName) values ('ПЗЧ', 'Поливинилхлорид з. ч.');
+
+-- create table category_users(
+-- users_id integer not null,
+-- categories_id integer not null,
+-- primary key (users_id, categories_id),
+-- foreign key (users_id) references users(id) on update cascade,
+-- foreign key (categories_id) references category(id) on update cascade
+-- );
+
+create table users_categories(
+user_id integer not null,
+categories_id integer not null,
+primary key (user_id, categories_id),
+foreign key (user_id) references users(id) on update cascade,
+foreign key (categories_id) references category(id) on update cascade
+);
+
+insert into users_categories(user_id, categories_id) values(1,1);
+insert into users_categories(user_id, categories_id) values(1,2);
+
+insert into category_users(users_id, categories_id) values(1,1);
+insert into category_users(users_id, categories_id) values(1,2);
+
+
+create table suppliers(
+id serial primary key,
+name varchar(100) not null,
+phone varchar(12) not null,
+email varchar(100) not null,
+region varchar(100) not null,
+addressActual varchar(100) not null,
+addressLegal varchar(100) not null,
+lastInfo text,
+additionalInfo text,
+date timestamp not null -- дата создания, полагаю, уточнить у заказчика
+-- mainConatact integer not null
+);
+
+alter table suppliers drop column files;
+
+CREATE SEQUENCE JPA_SEQUENCE START 50 INCREMENT 1 NO CYCLE;
+
+insert into suppliers(name, phone, email, region, addressActual, addressLegal, lastInfo, additionalInfo, date)
+values ('ООО Нефтемаш', '+79011231212', 'm@we.ru', 'волгоград', 'ул Чуйкова',
+'ул Маршала Еременко', 'последния инфа о чем-то', 'дополнительная информация', now());
+insert into suppliers(name, phone, email, region, addressActual, addressLegal, lastInfo, additionalInfo, date, files)
+values ('ООО Волгопром', '+79011231212', 'm@we.ru', 'волгоград', 'ул Чуйкова',
+'ул Маршала Еременко', 'последния инфа о чем-то', 'дополнительная информация', now(), '/tmp/photos/smth');
+insert into suppliers(name, phone, email, region, addressActual, addressLegal, lastInfo, additionalInfo, date, files)
+values ('ООО Полимерпром', '+79011231212', 'm@we.ru', 'волгоград', 'ул Чуйкова',
+'ул Маршала Еременко', 'Описание полимеров, которые не требуют спецматералов', 'дополнительная информация', now(), '/tmp/photos/smth');
+
+create table contacts(
+id serial primary key,
+name varchar(100) not null,
+email varchar(100) not null,
+phone varchar(100) not null,
+position varchar(100) not null,
+more varchar(100) not null
+);
+
+insert into contacts(name, email, phone) values ('Иван Борисович', 'bor@a.ru', '+79011231212');
+insert into contacts(name, email, phone) values ('Светлана Евгеньевна', 'bor@a.ru', '+79011231212');
+
+create table suppliers_contacts(
+suppliers_id integer not null,
+contacts_id integer not null,
+primary key (suppliers_id, contacts_id),
+foreign key (suppliers_id) references suppliers(id) on update cascade on delete cascade,
+foreign key (contacts_id) references contacts(id) on update cascade on delete cascade
+);
+
+drop table suppliers_contacts;
+
+insert into suppliers_contacts(suppliers_id, contacts_id) values(1,1);
+insert into suppliers_contacts(suppliers_id, contacts_id) values(1,2);
+
+create table comments(
+id serial primary key,
+time timestamp not null,
+message text not null,
+-- userId integer references users (id),
+users_id integer references users (id)
+-- supplierId integer references suppliers (id),
+-- customerId integer references customers (id)
+);
+
+create table comments_suppliers(
+comments_id integer not null,
+suppliers_id integer not null,
+primary key (comments_id, suppliers_id),
+foreign key (comments_id) references comments(id) on update cascade,
+foreign key (suppliers_id) references suppliers(id) on update cascade
+);
+
+create table comments_customers(
+comments_id integer not null,
+customers_id integer not null,
+primary key (comments_id, customers_id),
+foreign key (comments_id) references comments(id) on update cascade,
+foreign key (customers_id) references customers(id) on update cascade
+);
+
+insert into comments_customers(comments_id, customers_id) values (1,1);
+insert into comments_customers(comments_id, customers_id) values (18,2);
+
+-- create table commnets_tasks();
+
+drop table comments;
+
+insert into comments(time, message, users_id) values (now(), 'hi', 3);
+
+-- insert into comments(time, message, userId, supplierId, customerId) values (now(), 'привет', 1, null, 1);
+-- insert into comments(time, message, userId, supplierId, customerId) values (now(), 'привет', 1, 1, 1);
+-- insert into comments(time, message, userId, supplierId, customerId) values (now(), 'Еще раз привет', 1, 1, 1);
+
+drop table comments cascade;
+
+create table customers(
+id serial primary key,
+name varchar(100) not null,
+phone varchar(12) not null,
+email varchar(100) not null,
+region varchar(100) not null,
+addressActual varchar(100) not null,
+addressLegal varchar(100) not null,
+note text,
+additionalInfo text,
+lastInfo text,
+date timestamp not null,
+files varchar(200)
+);
+
+insert into customers(name, phone, email, region, addressActual, addressLegal, note, additionalInfo, lastInfo, date, files)
+values ('ООО Нефтемаш', '+79011231212', 'm@we.ru', 'волгоград', 'ул Чуйкова',
+'ул Маршала Еременко', 'заметка', 'последния инфа о чем-то', 'дополнительная информация', now(), '/tmp/photos/smth');
+insert into customers(name, phone, email, region, addressActual, addressLegal, note, additionalInfo, lastInfo, date, files)
+values ('ООО Нефтемашw', '+79011231212', 'm@we.ru', 'волгоградц', 'ул Чуйковаф',
+'ул Маршала Еременко', 'заметка', 'последния инфа о чем-то', 'дополнительная информация', now(), '/tmp/photos/smth');
+
+
+create table customers_contacts(
+customers_id integer not null,
+contacts_id integer not null,
+primary key (customers_id, contacts_id),
+foreign key (customers_id) references customers(id) on update cascade,
+foreign key (contacts_id) references contacts(id) on update cascade
+);
+
+-- drop table customers_contacts;
+
+insert into customers_contacts(customers_id, contacts_id) values(1,1);
+insert into customers_contacts(customers_id, contacts_id) values(1,2);
+
+create table products(
+id serial primary key,
+name varchar(100) not null,
+fullName varchar(100) not null,
+manufacturer varchar(100) not null,
+-- supplier varchar(100) not null,
+-- applicationArea text not null, -- вставить категорию где-то
+characteristicProperties text not null, -- вставить ссылку на физико-химический свойства
+applicationArea text not null, -- вставить ссылку на физико-химический свойства
+category varchar(100) not null, -- вставить ссылку на физико-химический свойства
+-- suppliers_id integer references suppliers (id) -- возможно здесь наоборот. То есть надо поставить products_id в suppliers чтобы поставщиков отображать в продуктах
+supplier varchar(100) not null -- возможно здесь наоборот. То есть надо поставить products_id в suppliers чтобы поставщиков отображать в продуктах
+);
+
+drop table products cascade;
+
+insert into products(name, fullName, manufacturer, characteristicProperties, applicationArea, category, suppliers_id) values ('тест', 'тестфул', 'ооо нефть', 'описание', 'область применения', 'ПНД', 1);
+insert into products(name, fullName, manufacturer, characteristicProperties, applicationArea, category, suppliers_id) values ('тест', 'тестфул', 'ооо нефть', 'описание', 'область применения', 'ПНД', 23);
+insert into products(name, fullName, manufacturer, characteristicProperties, applicationArea, category, supplier) values ('тест', 'тестфул', 'ооо нефть', 'описание', 'область применения', 'ПНД', 'поставщик');
+
+alter table products drop constraint products_suppliers_id_fkey, add constraint products_suppliers_id_fkey foreign key (suppliers_id) references suppliers (id) on delete cascade;
+alter table tasks drop constraint tasks_suppliers_id_fkey, add constraint tasks_suppliers_id_fkey foreign key (suppliers_id) references suppliers (id) on delete cascade;
+alter table comments drop constraint comments_supplierid_fkey, add constraint comments_supplierid_fkey foreign key (supplierId) references suppliers (id) on delete cascade;
+
+-- alter table public.scores
+-- drop constraint scores_gid_fkey,
+-- add constraint scores_gid_fkey
+--    foreign key (gid)
+--    on delete cascade;
+
+create table physical_properties(
+id serial primary key,
+name varchar(100) not null
+-- products_id integer references products (id)
+);
+
+insert into physical_properties(name) values('тестовый');
+insert into physical_properties(name) values('тестовый2');
+insert into physical_properties(name) values('тестовый3');
+
+create table props(
+id serial primary key,
+name varchar(100) not null,
+valueDoc varchar(100) not null,
+valueFact varchar(100) not null
+-- physical_properties_id integer references physical_properties (id)
+);
+
+-- insert into props(name, valueDoc, valueFact, physical_properties_id) values ('при 23С', '100-200', '100', 1);
+-- insert into props(name, valueDoc, valueFact, physical_properties_id) values ('при 25С', '100-200', '100', 1);
+insert into props(name, valueDoc, valueFact) values ('при 25С', '100-200', '100');
+insert into props(name, valueDoc, valueFact) values ('при 23С', '100-200', '100');
+
+create table physical_properties_props(
+physical_properties_id integer not null,
+props_id integer not null,
+primary key (physical_properties_id, props_id),
+foreign key (props_id) references props(id) on update cascade,
+foreign key (physical_properties_id) references physical_properties(id) on update cascade
+);
+
+insert into physical_properties_props(props_id, physical_properties_id) values(3,1);
+insert into physical_properties_props(props_id, physical_properties_id) values(4,1);
+
+create table products_physical_properties(
+products_id integer not null,
+physical_properties_id integer not null,
+primary key (products_id, physical_properties_id),
+foreign key (products_id) references products(id) on update cascade,
+foreign key (physical_properties_id) references physical_properties(id) on update cascade
+);
+
+insert into products_physical_properties(products_id, physical_properties_id) values(1,1);
+insert into products_physical_properties(products_id, physical_properties_id) values(1,2);
+
+create table fil(
+id serial primary key,
+name varchar(200) not null,
+type varchar(100) );
+
+insert into fil(name, type) values('tmp', 'tm');
+insert into fil(name, type) values('tmp1', 'tm1');
+insert into suppliers_fil(suppliers_id, fil_id) values (1,1);
+insert into suppliers_fil(suppliers_id, fil_id) values (1,2);
+
+create table suppliers_fil(
+suppliers_id integer not null,
+fil_id integer not null ,
+primary key (suppliers_id, fil_id),
+foreign key (suppliers_id) references suppliers(id) on update cascade,
+foreign key (fil_id) references fil(id) on update cascade
+);
+
+create table products_fil(
+products_id integer not null,
+fil_id integer not null ,
+primary key (products_id, fil_id),
+foreign key (products_id) references products(id) on update cascade,
+foreign key (fil_id) references fil(id) on update cascade
+);
+
+create table customer_products(
+id serial primary key,
+name varchar(100) not null,
+valueEnd varchar(100) not null,
+valueBeg varchar(100) not null
+);
+
+insert into customer_products(name, valueEnd, valueBeg) values('нэйм', 'начальное значение', 'конечное значение');
+insert into customer_products_connect(customers_id, customer_products_id) values(1,1);
+
+create table customer_products_connect(
+customers_id integer not null,
+customer_products_id integer not null ,
+primary key (customers_id, customer_products_id),
+foreign key (customers_id) references customers(id) on update cascade,
+foreign key (customer_products_id) references customer_products(id) on update cascade
+);
+
+-- новый auth
+create table daouser(
+id serial primary key,
+username varchar(100) not null,
+password varchar(100) not null
+);
+
+insert into daouser(username, password) values('admin', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6');
+
+
+create table application_area(
+id serial primary key,
+description text not null
+);
+
+insert into application_area(description) values('ПВХ не растворим в воде, устойчив к действию кислот, щелочей, спиртов, минеральных масел, набухает и растворяется в эфирах, кетонах, хлорированных и ароматических углеводородах. ПВХ совмещается со многими пластификаторами (например фталатами, себацинатами, фосфатами), стоек к окислению и практически не горюч. Поливинилхлорид обладает невысокой теплостойкостью, при нагревании выше 100 ºС заметно разлагается с выделением HCL. Для повышения теплостойкости и улучшения растворимости ПВХ подвергают хлорированию.');

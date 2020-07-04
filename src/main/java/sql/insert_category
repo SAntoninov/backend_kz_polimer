@@ -1,0 +1,3 @@
+insert into category(shortName, fullName) values ('ПНД', 'Поливинилхлорид наноупорный дорогой');
+insert into category(shortName, fullName) values ('ПВХ', 'Поливинилхлорид');
+insert into category(shortName, fullName) values ('ПЗЧ', 'Поливинилхлорид з. ч.');
